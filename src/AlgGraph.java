@@ -6,17 +6,19 @@ import java.util.List;
 
 /**
  * 07.09.2021
- * Graph
+ * AlgGraph
  *
  * @author Havlong
  * @version v1.0
  */
-public class Graph {
+public class AlgGraph {
     public static final int EMPTY = -1;
+
     private int size;
+
     private int[][] matrix;
 
-    public Graph(int size) {
+    public AlgGraph(int size) {
         this.size = size;
         this.matrix = new int[this.size][this.size];
         for (int i = 0; i < this.size; i++) {
@@ -26,7 +28,7 @@ public class Graph {
         }
     }
 
-    public Graph(int[][] matrix) {
+    public AlgGraph(int[][] matrix) {
         if (matrix.length == 0 || matrix[0].length != matrix.length)
             throw new IllegalArgumentException();
         this.size = matrix.length;
@@ -38,7 +40,7 @@ public class Graph {
         }
     }
 
-    public static Graph load(String filename) throws IOException {
+    public static AlgGraph load(String filename) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filename));
         int size = Integer.parseInt(reader.readLine());
         int[][] matrix = new int[size][size];
@@ -51,7 +53,7 @@ public class Graph {
                 matrix[i][j] = Integer.parseInt(toUse[j]);
             }
         }
-        return new Graph(matrix);
+        return new AlgGraph(matrix);
     }
 
     public int getSize() {
@@ -127,25 +129,31 @@ public class Graph {
         } else throw new IllegalArgumentException();
     }
 
-    public List<Integer> useDijkstra(int from, int to) {
+    public List<Integer> useDijkstra(int from, int to, int[][] matrix) {
         if (isValid(from) && isValid(to)) {
             if (from == to) {
                 return Collections.singletonList(from);
             }
             int[] parent = new int[size];
             int[] d = new int[size];
+            int[] v = new int[size];
             for (int i = 0; i < size; i++) {
                 d[i] = Integer.MAX_VALUE;
-                parent[i] = EMPTY;
+                parent[i] = -1;
+                v[i] = 0;
             }
             d[from] = 0;
             parent[from] = -2;
             for (int i = 0; i < size; i++) {
                 int next = -1;
                 for (int j = 0; j < size; j++) {
-                    if ((next == -1 || d[j] < d[next]) && parent[j] == -1)
+                    if ((next == -1 || d[j] < d[next]) && v[j] == 0)
                         next = j;
                 }
+                if (next == -1 || d[next] == Integer.MAX_VALUE) {
+                    break;
+                }
+                v[next] = 1;
                 for (int nextV = 0; nextV < size; nextV++) {
                     if (matrix[next][nextV] != EMPTY && d[next] + matrix[next][nextV] < d[nextV]) {
                         parent[nextV] = next;
@@ -153,11 +161,11 @@ public class Graph {
                     }
                 }
             }
-            if (parent[to] != EMPTY) {
+            if (v[to] == 1) {
                 ArrayList<Integer> list = new ArrayList<>();
                 list.add(to);
                 int cur = to;
-                while (cur != -2) {
+                while (parent[cur] != -2) {
                     list.add(parent[cur]);
                     cur = parent[cur];
                 }
@@ -169,7 +177,7 @@ public class Graph {
         } else throw new IllegalArgumentException();
     }
 
-    public int cost(List<Integer> way) {
+    public int cost(List<Integer> way, int[][] matrix) {
         int last = -1;
         int cost = 0;
         for (Integer v : way) {
