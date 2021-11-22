@@ -129,45 +129,108 @@ public class AlgGraph {
         } else throw new IllegalArgumentException();
     }
 
+    public DijkstraResult getDijkstraDistances(int from, int[][] matrix) {
+        int[] parent = new int[size];
+        int[] d = new int[size];
+        int[] v = new int[size];
+        for (int i = 0; i < size; i++) {
+            d[i] = Integer.MAX_VALUE;
+            parent[i] = -1;
+            v[i] = 0;
+        }
+        d[from] = 0;
+        parent[from] = -2;
+        for (int i = 0; i < size; i++) {
+            int next = -1;
+            for (int j = 0; j < size; j++) {
+                if ((next == -1 || d[j] < d[next]) && v[j] == 0)
+                    next = j;
+            }
+            if (next == -1 || d[next] == Integer.MAX_VALUE) {
+                break;
+            }
+            v[next] = 1;
+            for (int nextV = 0; nextV < size; nextV++) {
+                if (matrix[next][nextV] != EMPTY && d[next] + matrix[next][nextV] < d[nextV]) {
+                    parent[nextV] = next;
+                    d[nextV] = d[next] + matrix[next][nextV];
+                }
+            }
+        }
+
+        return new DijkstraResult(d, v, parent);
+    }
+
+    public FloydResult getFloydDistances(int[][] matrix) {
+        int[][] parent = new int[size][size];
+        int[][] d = new int[size][size];
+        for (int i = 0; i < size; ++size) {
+            for (int j = 0; j < size; j++) {
+                if (matrix[i][j] != EMPTY) {
+                    d[i][j] = matrix[i][j];
+                    parent[i][j] = i;
+                } else {
+                    d[i][j] = Integer.MAX_VALUE;
+                    parent[i][j] = -1;
+                }
+            }
+            d[i][i] = 0;
+            parent[i][i] = -2;
+        }
+
+        for (int p = 0; p < size; p++) {
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (d[i][j] < d[i][p] + d[p][j]) {
+                        d[i][j] = d[i][p] + d[p][j];
+                        parent[i][j] = p;
+                    }
+                }
+            }
+        }
+
+        return new FloydResult(d, parent);
+    }
+
     public List<Integer> useDijkstra(int from, int to, int[][] matrix) {
         if (isValid(from) && isValid(to)) {
             if (from == to) {
                 return Collections.singletonList(from);
             }
-            int[] parent = new int[size];
-            int[] d = new int[size];
-            int[] v = new int[size];
-            for (int i = 0; i < size; i++) {
-                d[i] = Integer.MAX_VALUE;
-                parent[i] = -1;
-                v[i] = 0;
-            }
-            d[from] = 0;
-            parent[from] = -2;
-            for (int i = 0; i < size; i++) {
-                int next = -1;
-                for (int j = 0; j < size; j++) {
-                    if ((next == -1 || d[j] < d[next]) && v[j] == 0)
-                        next = j;
-                }
-                if (next == -1 || d[next] == Integer.MAX_VALUE) {
-                    break;
-                }
-                v[next] = 1;
-                for (int nextV = 0; nextV < size; nextV++) {
-                    if (matrix[next][nextV] != EMPTY && d[next] + matrix[next][nextV] < d[nextV]) {
-                        parent[nextV] = next;
-                        d[nextV] = d[next] + matrix[next][nextV];
-                    }
-                }
-            }
-            if (v[to] == 1) {
+
+            DijkstraResult result = getDijkstraDistances(from, matrix);
+
+            if (result.v[to] == 1) {
                 ArrayList<Integer> list = new ArrayList<>();
                 list.add(to);
                 int cur = to;
-                while (parent[cur] != -2) {
-                    list.add(parent[cur]);
-                    cur = parent[cur];
+                while (result.parent[cur] != -2) {
+                    list.add(result.parent[cur]);
+                    cur = result.parent[cur];
+                }
+                Collections.reverse(list);
+                return list;
+            } else {
+                return Collections.emptyList();
+            }
+        } else throw new IllegalArgumentException();
+    }
+
+    public List<Integer> useFloyd(int from, int to, int[][] matrix) {
+        if (isValid(from) && isValid(to)) {
+            if (from == to) {
+                return Collections.singletonList(from);
+            }
+
+            FloydResult result = getFloydDistances(matrix);
+
+            if (result.parent[from][to] > 0) {
+                ArrayList<Integer> list = new ArrayList<>();
+                list.add(to);
+                int cur = to;
+                while (result.parent[from][cur] != -2) {
+                    list.add(result.parent[from][cur]);
+                    cur = result.parent[from][cur];
                 }
                 Collections.reverse(list);
                 return list;
@@ -193,5 +256,27 @@ public class AlgGraph {
 
     private boolean isValid(int v) {
         return v >= 0 && v < size;
+    }
+
+    static class DijkstraResult {
+        int[] d;
+        int[] v;
+        int[] parent;
+
+        public DijkstraResult(int[] d, int[] v, int[] parent) {
+            this.d = d;
+            this.v = v;
+            this.parent = parent;
+        }
+    }
+
+    static class FloydResult {
+        int[][] d;
+        int[][] parent;
+
+        public FloydResult(int[][] d, int[][] parent) {
+            this.d = d;
+            this.parent = parent;
+        }
     }
 }
