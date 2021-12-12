@@ -21,11 +21,15 @@ public class Controller implements Initializable {
 
     public Button calculateButton;
 
+    public Button compareButton;
+
     public Label resultLabel;
 
     public ChoiceBox<String> startVertexBox;
 
     public ChoiceBox<String> finishVertexBox;
+
+    public ChoiceBox<String> algBox;
 
     @FXML
     private VBox graphBox;
@@ -66,6 +70,15 @@ public class Controller implements Initializable {
         finishVertexBox.getItems().addAll(vertexes);
         finishVertexBox.setValue(finishVertexBox.getItems().get(0));
 
+        algBox.getItems().addAll("алгоритм Дейкстры", "алгоритм Флойда");
+        algBox.setValue(algBox.getItems().get(0));
+
+        for (int i = 0; i < weights.length; i++) {
+            for (int j = 0; j < weights[0].length; j++) {
+                weights[i][j] = EMPTY;
+            }
+        }
+
         initMatrixView();
         initListeners();
     }
@@ -76,13 +89,19 @@ public class Controller implements Initializable {
 
     @FXML
     public void calculateMinPath() {
-        List<Integer> path = algGraph.useDijkstra(getNumByName(startVertexBox.getValue()),
-                getNumByName(finishVertexBox.getValue()), weights);
+        List<Integer> path;
+        if (algBox.getValue().equals(algBox.getItems().get(0))) {
+            path = algGraph.useDijkstra(getNumByName(startVertexBox.getValue()),
+                    getNumByName(finishVertexBox.getValue()), weights);
+        } else {
+            path = algGraph.useFloyd(getNumByName(startVertexBox.getValue()),
+                    getNumByName(finishVertexBox.getValue()), weights);
+        }
 
         StringBuilder text = new StringBuilder();
         if (path.isEmpty()) {
             text = new StringBuilder("Пути между вершинами " + startVertexBox.getValue() + " и " +
-                    getNumByName(finishVertexBox.getValue()) + " нет.");
+                    finishVertexBox.getValue() + " нет.");
         } else {
             for (int i = 0; i < path.size() - 1; i++) {
                 text.append(getNameByNum(path.get(i))).append(" -> ");
@@ -102,6 +121,38 @@ public class Controller implements Initializable {
                     .append(")");
         }
         resultLabel.setText(text.toString());
+    }
+
+    @FXML
+    public void compareAlgs() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Сравнение алгоритмов Дейкстры и Флойда");
+        alert.setHeaderText(null);
+        String result = "Алгоритм Дейкстры: ";
+        int[][] tempMatrix = new int[50][50];
+        Random random = new Random();
+        for (int i = 0; i < 50; i++) {
+            for (int j = 0; j < 50; j++) {
+                if (random.nextInt(2) == 0) {
+                    tempMatrix[i][j] = EMPTY;
+                } else {
+                    tempMatrix[i][j] = random.nextInt(10000);
+                }
+            }
+            tempMatrix[i][i] = EMPTY;
+        }
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < 50; i++) {
+            algGraph.getDijkstraDistances(i, tempMatrix);
+        }
+        long endTime = System.currentTimeMillis();
+        result += (endTime - startTime) + " мс\nАлгоритм Флойда: ";
+        startTime = System.currentTimeMillis();
+        algGraph.getFloydDistances(tempMatrix);
+        endTime = System.currentTimeMillis();
+        result += (endTime - startTime) + " мс";
+        alert.setContentText(result);
+        alert.showAndWait();
     }
     
     private void initWeightsByMatrix() {
@@ -493,12 +544,4 @@ public class Controller implements Initializable {
             }
         });
     }
-
-    /*
-    * поиск (отсутствие пути пофиксить)
-    * что-то с петлями (нулями задавать петли?)
-    *
-    * поправить вью графа
-    * стрелки покрасить
-     */
 }

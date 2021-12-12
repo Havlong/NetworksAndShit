@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="625.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="625.0" prefWidth="1201.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Controller">
     <children>
         <GridPane layoutX="23.0" layoutY="20.0" prefHeight="60.0" prefWidth="223.0">
             <columnConstraints>
@@ -29,12 +29,14 @@
             <ChoiceBox fx:id="finishVertexBox" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             </children>
         </GridPane>
-        <Button fx:id="calculateButton" layoutX="209.0" layoutY="521.0" mnemonicParsing="false" onMouseClicked="#calculateMinPath" text="Рассчитать кратчайший путь" />
+        <Button fx:id="calculateButton" layoutX="208.0" layoutY="509.0" mnemonicParsing="false" onMouseClicked="#calculateMinPath" text="Рассчитать кратчайший путь" />
       <VBox fx:id="graphBox" alignment="CENTER" layoutX="636.0" layoutY="65.0" prefHeight="499.0" prefWidth="550.0" />
       <TableView fx:id="matrixView" layoutX="20.0" layoutY="102.0" prefHeight="400.0" prefWidth="550.0" />
       <Label fx:id="resultLabel" layoutX="636.0" layoutY="580.0">
          <font>
             <Font size="14.0" />
          </font></Label>
+      <ChoiceBox fx:id="algBox" layoutX="208.0" layoutY="545.0" prefHeight="25.0" prefWidth="174.0" />
+      <Button fx:id="compareButton" layoutX="208.0" layoutY="581.0" mnemonicParsing="false" onMouseClicked="#compareAlgs" prefHeight="25.0" prefWidth="174.0" text="Сравнить алгоритмы" />
     </children>
 </AnchorPane>
